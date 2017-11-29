@@ -1,11 +1,20 @@
 <?php
     class membership {
         private function run_query($query, $select) {
-            $db_server = mysql_connect("localhost", "id3790675_aayushdubey50", "PurdueBalderdash238!");
-            mysql_select_db("id3790675_balderdash", $db_server);
-            $result = mysql_query($query);
-            if ($select) $row = mysql_fetch_assoc($result);
-            mysql_close($db_server);
+            //$db_server = mysql_connect("localhost", "id3790675_aayushdubey50", "PurdueBalderdash238!");
+            $db_server = mysqli_connect("localhost", "id3790675_aayushdubey50", "PurdueBalderdash238!", "id3790675_balderdash");
+            if (!$db_server) {
+                echo "Error: Unable to connect to MySQL." . PHP_EOL;
+                echo "Debugging errno: " . mysqli_connect_errno() . PHP_EOL;
+                echo "Debugging error: " . mysqli_connect_error() . PHP_EOL;
+                exit;
+            }
+            //mysql_select_db("id3790675_balderdash", $db_server);
+            $result = mysqli_query($db_server, $query);
+            if (!$result) {
+                $row = NULL;
+            } else if ($select) $row = mysqli_fetch_assoc($result);
+            mysqli_close($db_server);
             if ($select) return $row;
         }
         function create_user($username, $email, $password) {
@@ -17,10 +26,10 @@
                 $salt = substr(md5($timeStamp), 0, 7);
                 $password = md5($salt.$password);
 
-                $query = "INSERT INTO users_information (username, email, password, salt) VALUES ($username, $email, $password, $salt)";
+                $query = "INSERT INTO users_information (username, email, password, salt) VALUES ('$username', '$email', '$password', '$salt')";
                 $this->run_query($query, False);
 
-                $query = "SELECT userID FROM users_information WHERE username=$username LIMIT 1";
+                $query = "SELECT * FROM users_information WHERE username='$username' LIMIT 1";
                 $row = $this->run_query($query, True);
 
                 $_SESSION["status"] = "authorized";
