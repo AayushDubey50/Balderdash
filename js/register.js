@@ -1,16 +1,16 @@
 function checkPass() {
-    var pass1 = document.getElementById('pass1').value;
-    var pass2 = document.getElementById('pass2').value;
-    var message = document.getElementById('confirmPass');
-    if(pass1 == pass2 && pass1.length > 7) {
+    var pass1 = document.getElementById("pass1").value;
+    var pass2 = document.getElementById("pass2").value;
+    var message = document.getElementById("confirmPass");
+    if (pass1 == pass2 && pass1.length > 7) {
         message.style.color = "#006400";
         message.innerHTML = "Passwords Match!";
         return true;
-    } else if(pass1 == pass2 && pass1.length < 8) {
+    } else if (pass1 == pass2 && (pass1.length < 8 || pass1.length > 100)) {
         message.style.color = "#ff0000";
-        message.innerHTML = "Password must be at least 8 characters.";
+        message.innerHTML = "Password must be between 8-100 characters.";
         return false;
-    } else if(pass1 == "") {
+    } else if (pass1 == "") {
         message.style.color = "#ff0000";
         message.innerHTML = "Please enter a valid password first.";
         return false;
@@ -20,49 +20,26 @@ function checkPass() {
         return false;
     }
 }
-function checkACG() {
-    var age = document.getElementById("age").value;
-    var country = document.getElementById("country").value;
-    var gender = document.getElementById("gender").value;
-    if (age === "NULL") {
-        return "Please select your Age.";;
-    }
-    if (country === "NULL") {
-        return "Please select your Country.";
-    }
-    if (gender === "NULL") {
-        return "Please select your Gender.";
-    }
-    return true;
-}
 function alerting(textAlert) {
     bootstrap_alert.warning(textAlert);
 }
 function subm() {
-    var name = document.getElementById('fname').value;
-    var address = document.getElementById('address').value;
-    var fullname = name.split(" ");
+    var username = document.getElementById("username").value;
+    var address = document.getElementById("address").value;
+    var fullname = username.split(" ");
     var atPos = address.indexOf("@");
     var dotPos = address.lastIndexOf(".");
 
     bootstrap_alert = function() {};
     bootstrap_alert.warning = function(textAlert) {
-        $('#alert_placeholder').html('<div class="alert alert-danger" role="alert"><a class="close" data-dismiss="alert">×</a><span>'+textAlert+'</span></div>');
+        $("#alert_placeholder").html('<div class="alert alert-danger" role="alert"><a class="close" data-dismiss="alert">×</a><span>'+textAlert+'</span></div>');
     }
     if (!checkPass()) alerting("First check if your passwords match.");
-    else if (checkACG() != true) alerting(checkACG());
-    else if (fullname.length < 2) alerting("You must enter both your first and last name.");
-    else if (fullname[0] == "" || fullname[1] == "") alerting("You did not enter your first or last name.");
-    else if (fullname[0].substring(0,1) != fullname[0].substring(0,1).toUpperCase() || fullname[0].length < 2) {
-        alerting("The First Name you entered is not valid.");
-    }
-    else if (fullname[1].substring(0,1) != fullname[1].substring(0,1).toUpperCase() || fullname[1].length < 2) {
-        alerting("The Last Name you entered is not valid.");
-    }
+    else if (fullname.length != 1) alerting("You can't enter spaces in your username.");
+    else if (fullname[0] == "") alerting("You must enter a username.");
     else if (atPos<1 || dotPos< atPos+2 || dotPos+2 >=address.length) alerting("Not a valid e-mail address.");
-    // else if (grecaptcha.getResponse() == "") alerting("You must checkmark the recaptcha.");
     else {
-        document.getElementById("sendId").value = name + ", " + address + ", " + document.getElementById('pass1').value + ", " + document.getElementById('age').value + ", " + document.getElementById('country').value + ", " + document.getElementById('gender').value;
+        document.getElementById("sendId").value = username + ", " + address + ", " + document.getElementById("pass1").value;
         document.forms["user"].submit();
     }
 }
