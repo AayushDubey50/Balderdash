@@ -10,7 +10,7 @@
         if ($badLogin != false) print '<script>location.href = "'.$badLogin.'"</script>';
     } else if ($_POST && !empty($_POST["send"])) {
         $send = explode(", ", $_POST["send"]);
-        $badSignup = $membership->create_user($send[0], $send[1], $send[2], $send[3], $send[4], $send[5]);
+        $badSignup = $membership->create_user($send[0], $send[1], $send[2]);
     }
 
     // User already logged in and hits "log out" button, any page has a logout
