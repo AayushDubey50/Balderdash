@@ -37,6 +37,7 @@ function subm() {
     if (!checkPass()) alerting("First check if your passwords match.");
     else if (fullname.length != 1) alerting("You can't enter spaces in your username.");
     else if (fullname[0] == "") alerting("You must enter a username.");
+    else if (username.length < 8 || username.length > 100) alerting("Enter in a username between 8-100 characters.");
     else if (atPos<1 || dotPos< atPos+2 || dotPos+2 >=address.length) alerting("Not a valid e-mail address.");
     else {
         document.getElementById("sendId").value = username + ", " + address + ", " + document.getElementById("pass1").value;
