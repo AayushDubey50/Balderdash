@@ -78,9 +78,7 @@
                             </ul>
                         </li>
                         <li id="../logout"><a href="../?status=loggedout">Log Out</a></li>';
-                            } else {
-                                print '<li><a href="#" data-toggle="modal" data-target="#myModal">Login/Sign Up</a></li>';
-                            }
+                            } else print '<li><a href="#" data-toggle="modal" data-target="#myModal">Login/Sign Up</a></li>';
                         ?>
 
                     </ul>
@@ -121,8 +119,8 @@
                                     <h3 class="modalHeader">Sign In</h3>
                                     <span id="confirmMember" class="confirmMember"></span>
                                     <div class="form-group">
-                                        <label class="sr-only" for="email">Email</label>
-                                        <input name="email" type="email" class="form-control" placeholder="Email" />
+                                        <label class="sr-only" for="email">Email or Username</label>
+                                        <input name="user" class="form-control" placeholder="Email or Username" />
                                     </div>
                                     <div class="form-group">
                                         <label class="sr-only" for="password">Password</label>
@@ -136,13 +134,13 @@
                             <div class="col-md-6 rightSide">
                                 <h3 class="modalHeader">Sign Up</h3>
                                 <div class="form-group">
-                                    <label class="sr-only" for="name">Full Name</label>
-                                    <input name="name" type="text" class="form-control" id="fname" placeholder="Full Name" />
+                                    <label class="sr-only" for="name">Username</label>
+                                    <input name="username" type="text" class="form-control" id="username" placeholder="Enter in a username" />
                                 </div>
                                 <span id="alreadyUser" class="alreadyUser"></span>
                                 <div class="form-group">
                                     <label class="sr-only" for="email">Email</label>
-                                    <input name="email2" type="email" class="form-control" id="address" placeholder="Email" />
+                                    <input name="email" type="email" class="form-control" id="address" placeholder="Email" />
                                 </div>
                                 <div class="form-group">
                                     <label class="sr-only" for="password">Password</label>
@@ -162,23 +160,9 @@
                                 </div>-->
                                 <button onclick="subm()" class="modalBtn">Sign Up</button>
                             </div>';
-                            } ?></div><!-- /.container-fluid -->
-                    </div><!-- /.modal-body -->
-                </div><!-- /.modal-content -->
-            </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
-        <!-- Modal -->
-        <div class="modal fade" id="myResult" role="dialog" aria-labelledby="gridSystemModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <?php
-                            //include "testAndResultListModal/modalResultList.php";
-                        ?>
-                        <div class="container-fluid" style="min-height: 50px;"></div><!-- /.container-fluid -->
+                            } ?>
+
+                            </div><!-- /.container-fluid -->
                     </div><!-- /.modal-body -->
                 </div><!-- /.modal-content -->
             </div><!-- /.modal-dialog -->
