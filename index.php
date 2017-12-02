@@ -5,8 +5,8 @@
 
     // User tries logging into their account
     // else if the user wants to sign up for an account
-    if ($_POST && !empty($_POST["email"]) && !empty($_POST["password"])) {
-        $badLogin = $membership->validate_user($_POST["email"], $_POST["password"]);
+    if ($_POST && !empty($_POST["user"]) && !empty($_POST["password"])) {
+        $badLogin = $membership->validate_user($_POST["user"], $_POST["password"]);
         if ($badLogin != false) print '<script>location.href = "'.$badLogin.'"</script>';
     } else if ($_POST && !empty($_POST["send"])) {
         $send = explode(", ", $_POST["send"]);
@@ -91,15 +91,24 @@
                         <div id="mainText">
                             <p>Welcome to Purdue Balderdash!</p>
                             <p>CS252 Lab 6</p>
-                            <a class="buttonLink" href="#" data-toggle="modal" data-target="#myModal">
+                            <?php
+                                if (isset($_SESSION["status"]) && $_SESSION["status"] == "authorized") {
+                                    print '<a class="buttonLink" href="balderdash">
+                                <div class="buttonMain">Play Balderdash!</div>
+                            </a>';
+                                } else print '<a class="buttonLink" href="#" data-toggle="modal" data-target="#myModal">
                                 <div class="buttonMain">Login/Sign up</div>
-                            </a>
+                            </a>';
+                            ?>
+
                         </div>
                     </div>
                     <div class="col-sm-2"></div>
                 </div>
             </main>
-        </div>
+        </div><?php
+            if (!(isset($_SESSION["status"]) && $_SESSION["status"] == "authorized"))
+                print '
         <!-- Modal -->
         <div class="modal fade" id="myModal" role="dialog" aria-labelledby="gridSystemModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
@@ -108,11 +117,7 @@
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
-                        <div class="container-fluid" style="min-height: 50px;"><?php
-                            if (isset($_SESSION["status"]) && $_SESSION["status"] == "authorized") ;
-                                //include "./testAndResultListModal/modalTestList.php";
-                            else {
-                                print '
+                        <div class="container-fluid" style="min-height: 50px;">
                             <div id="alert_placeholder"></div>
                             <div class="col-md-6">
                                 <form method="POST" action="">
@@ -152,24 +157,23 @@
                                     <span id="confirmPass" class="confirmPass"></span>
                                 </div>
 
-                                <div class="form-group">';
-                                //require("./register_selectes.php");
-                                print '</div>
+                                <div class="form-group">
+                                </div>
                                 <!--<div class="form-group">
                                     <div class="g-recaptcha" data-sitekey="6LdB8DoUAAAAAOVmm9OGE4hrH7cBz7TAghPJ2f2m"></div>
                                 </div>-->
                                 <button onclick="subm()" class="modalBtn">Sign Up</button>
-                            </div>';
-                            } ?>
-
-                            </div><!-- /.container-fluid -->
+                            </div>
+                        </div><!-- /.container-fluid -->
                     </div><!-- /.modal-body -->
                 </div><!-- /.modal-content -->
             </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
         <form method="POST" action="" name="user">
             <input type="hidden" name="send" id="sendId" />
-        </form>
+        </form>';
+        ?>
+
         <script src="js/jquery-2.1.4.min.js"></script>
         <script src="js/jquery.js"></script>
         <script src="js/bootstrap.min.js"></script>
