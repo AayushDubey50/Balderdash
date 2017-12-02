@@ -35,13 +35,14 @@
                 $_SESSION["status"] = "authorized";
                 $_SESSION["userID"] = $row["userID"];
                 $_SESSION["username"] = $row["username"];
-                //header("location: https://purduebalderdash.000webhostapp.com/dashboard");
+                header("location: https://purduebalderdash.000webhostapp.com/balderdash");
             }
         }
         function validate_user($username, $password) {
+            $query = "";
             if (strpos($username, '@') !== FALSE)
-                $query = "SELECT * FROM users_information WHERE email='$email' LIMIT 1";
-            else $query = "SELECT * FROM users_information WHERE username='$username' LIMIT 1";
+                $query .= "SELECT * FROM users_information WHERE email='$username' LIMIT 1";
+            else $query .= "SELECT * FROM users_information WHERE username='$username' LIMIT 1";
             $row = $this->run_query($query, True);
 
             if (md5($row["salt"].$password) != $row["password"]) return false;
@@ -50,7 +51,7 @@
                 $_SESSION["status"] = "authorized";
                 $_SESSION["userID"] = $row["userID"];
                 $_SESSION["username"] = $row["username"];
-                //return "https://purduebalderdash.000webhostapp.com/dashboard";
+                return "https://purduebalderdash.000webhostapp.com/balderdash";
             } else return false;
         }
         function log_out() {
