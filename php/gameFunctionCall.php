@@ -23,7 +23,7 @@
             $onStart = $game_action->onStart($_SESSION["gameID"]);
             break;
         case "input_definition":
-            $input_definition = $game_action->input_definition($_SESSION["gameID"], $_SESSION["userID"], $_POST["input"]);
+            $input_definition = $game_action->input_definition($_SESSION["gameID"], $_SESSION["userID"], $input);
             if ($input_definition == NULL) ; // Have user submit another definition since it's already taken
             if ($input_definition) $onChoices = $game_action->onChoices($_SESSION["gameID"]);
             // $onChoices should be an array of string definitions
@@ -35,7 +35,8 @@
             // $_SESSION["idsDefs"] should be an array with elements of the format: [userID, definition]. userID = 0 means the computer
             break;
         case "select_definition":
-            $select_definition = $game_action->select_definition($_SESSION["gameID"], $_SESSION["userID"], $_POST["selectionID"]);
+            $selectionUser = $_SESSION["usernamesDefs"][$selectionDef];
+            $select_definition = $game_action->select_definition($_SESSION["gameID"], $_SESSION["userID"], $selectionUser);
             if ($select_definition) $onSummary = $game_action->onSummary($_SESSION["gameID"]);
             break;
         case "onSummary":
