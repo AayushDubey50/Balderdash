@@ -71,10 +71,10 @@
                 <div id="main" class="cd-fixed-bg cd-bg-2 row">
                     <div class="col-sm-1"></div>
                     <div class="col-sm-10">
-                        <div id="mainText">
+                        <!--<div id="mainText">
                             <p>Join a game!</p>
-                        </div>
-                        <iframe frameborder="0" onload="this.width=screen.width;this.height=screen.height;" src="https://v6p9d9t4.ssl.hwcdn.net/html/678092/index.html"></iframe>
+                        </div>-->
+                        <iframe frameborder="0"  scrolling="no" frameborder="0" style="position: relative; width: 100%; height: 658px; margin-top: 25px;" src="https://v6p9d9t4.ssl.hwcdn.net/html/678092/index.html"></iframe>
                         <!--<form method="POST" action="">
                             <button class="modalBtn">Join Game</button>
                         </form>-->
