@@ -186,7 +186,7 @@
             $query = "SELECT * FROM all_games WHERE gameID=$gameID;";
             $row = $this->run_query($query, True, False);
             $allIDsDef = explode("|", $row["userIDsDef"]);
-            $idsDefs = array();
+            $usernamesDefs = array();
             $allDefinitions = array();
             for ($i = 0; $i < count($allIDsDef); $i++) {
                 $idDef = explode(":", $allIDsDef[$i]);
@@ -194,23 +194,31 @@
                 $query = "SELECT username FROM user_information WHERE userID=$userID;";
                 $row = $this->run_query($query, True, False);
                 array_push($allDefinitions, $idDef[1]);
-                //array_push($idsDefs, $idDef);
-                $idsDefs[$idDef[0]] = $idDef[1];
+                //array_push($usernamesDefs, $idDef);
+                $usernamesDefs[$idDef[1]] = $row["username"];
             }
             array_push($allDefinitions, $_SESSION["definition"]);
-            //array_push($idsDefs, array(0, $_SESSION["definition"]));
-            $idsDefs["computer"] = $_SESSION["definition"];
-            $_SESSION["idsDefs"] = $idsDefs;
+            //array_push($usernamesDefs, array(0, $_SESSION["definition"]));
+            $usernamesDefs[$_SESSION["definition"]] = "computer";
+            $_SESSION["usernamesDefs"] = $usernamesDefs;
             shuffle($allDefinitions);
             return $allDefinitions;
         }
         /**
-         * Start a new round in the game
+         * Take in a user's selection of a definition
          *
          * @param int $gameID  id of the game to start
-         * @return array(boolean, boolean, array(usernames in the game))
+         * @param int $userID  id of the user who selects a definition
+         * @param string $selectionUser  username associated with the selected definition
+         * @return boolean 
          */
-        function select_definition($gameID, $userID, $selectionID) {
+        function select_definition($gameID, $userID, $selectionUser) {
+            if ($selectionUser != "computer") {
+                $query = "SELECT userID FROM users_information WHERE username=$selectionUser;";
+                $row = $this->run_query($query, True, False);
+                $selectionID = $row["userID"];
+            } else $selectionID = 0;
+
             $query = "SELECT * FROM all_games WHERE gameID=$gameID;";
             $row = $this->run_query($query, True, False);
             $allIDsDef = explode("|", $row["userIDsDef"]);
@@ -266,6 +274,7 @@
          * @return array(boolean, boolean, array(usernames in the game))
          */
         function onSummary($gameID) {
+            if (isset($_SESSION["oldSelectionID"])) unset($_SESSION["oldSelectionID"]);
             $query = "SELECT * FROM all_games WHERE gameID=$gameID;";
             $row = $this->run_query($query, True, False);
         }
