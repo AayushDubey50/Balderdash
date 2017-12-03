@@ -29,8 +29,14 @@ public class gameStart : MonoBehaviour {
         else
         {
             time = 0;
+			string url = "https://purduebalderdash.000webhostapp.com/php/gameFunctionCall.php";
+			WWWForm form = new WWWForm ();
+			form.AddField("functionName", "onStart");
+			WWW www = new WWW(url, form);
+			yield return www;
             playGame();
-        }
+		}
+
         int dtme = (int)time;
         Debug.Log(dtme.ToString());
         Debug.Log(Time.deltaTime);
