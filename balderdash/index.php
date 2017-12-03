@@ -69,14 +69,17 @@
             </nav>
             <main class="cd-main-content">
                 <div id="main" class="cd-fixed-bg cd-bg-2 row">
-                    <div class="col-sm-2"></div>
-                    <div class="col-sm-8">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-10">
                         <div id="mainText">
                             <p>Join a game!</p>
-                            <iframe src="#"></iframe>
                         </div>
+                        <iframe frameborder="0" onload="this.width=screen.width;this.height=screen.height;" src="https://v6p9d9t4.ssl.hwcdn.net/html/678092/index.html"></iframe>
+                        <!--<form method="POST" action="">
+                            <button class="modalBtn">Join Game</button>
+                        </form>-->
                     </div>
-                    <div class="col-sm-2"></div>
+                    <div class="col-sm-1"></div>
                 </div>
             </main>
         </div>
