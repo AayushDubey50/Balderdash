@@ -24,10 +24,9 @@ public class gameStart : MonoBehaviour {
 	void Update ()
     {
         //tme += Time.deltaTime;
-        if(time > 0)
-            time -= Time.deltaTime;
-        else
-        {
+		if (time > 0 ) {
+			time -= Time.deltaTime;
+		}else {
             time = 0;
 			string url = "https://purduebalderdash.000webhostapp.com/php/gameFunctionCall.php";
 			WWWForm form = new WWWForm ();
