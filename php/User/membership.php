@@ -20,7 +20,7 @@
         function create_user($username, $email, $password) {
             $query = "SELECT username FROM users_information WHERE username='$username' AND email='$email' LIMIT 1";
             $row = $this->run_query($query, True);
-            if ($row["username"] == $username) return false;
+            if ($row["username"] == $username || $username == "computer") return false;
             else {
                 $timeStamp = date("D. m/d/Y H:i:s");
                 $salt = substr(md5($timeStamp), 0, 7);
