@@ -8,7 +8,6 @@
                 echo "Debugging error: " . mysqli_connect_error() . PHP_EOL;
                 exit;
             }
-            //mysql_select_db("id3790675_balderdash", $db_server);
             $result = mysqli_query($db_server, $query);
             if (!$result) {
                 $row = NULL;
@@ -26,7 +25,7 @@
             $query = "SELECT wordId FROM all_words;";
             $row = $this->run_query($query, True, "wordId");
             $wordIDsLeft = implode(",", $row);
-            $query = "INSERT INTO all_games (isAvailable, wordIDsLeft, currentWordID, allUserIDs, userIDsDef, userPoints) VALUES (1, '$wordIDsLeft', '', '$userID', '', '0');";
+            $query = "INSERT INTO all_games (isAvailable, wordIDsLeft, currentWordID, allUserIDs, userIDsDef, numSelects, userPoints) VALUES (1, '$wordIDsLeft', '', '$userID', '', 0, '0');";
             $this->run_query($query, False, False);
             $query = "SELECT * FROM all_games WHERE gameID=(SELECT MIN(gameID) FROM all_games WHERE isAvailable=1 AND allUserIDs=$userID AND userPoints='0')";
             $row = $this->run_query($query, True, False);
@@ -35,9 +34,12 @@
         function join_game($userID) {
             $query = "SELECT * FROM all_games WHERE gameID=(SELECT MIN(gameID) FROM all_games WHERE isAvailable=1)";
             $row = $this->run_query($query, True, False);
-            if ($row == NULL || !$row || !isset($row["gameID"])) $this->start_game($userID);
-            else {
+            if ($row == NULL || !$row || !isset($row["gameID"])) {
+                $this->start_game($userID);
+                return array(False, False, array($userID));
+            } else {
                 $_SESSION["gameID"] = $row["gameID"];
+
                 $userIDs = explode(",", $row["allUserIDs"]);
                 array_push($userIDs, $userID);
                 $allUserIDs = implode(",", $userIDs);
@@ -47,15 +49,16 @@
                 $userPoints = implode(",", $points);
 
                 $gameID = $row["gameID"];
-                if (count($userIDs) >= 10) {
+                if (count($userIDs) == 5) {
                     $query = "UPDATE all_games SET allUserIDs='$allUserIDs', userPoints='$userPoints', isAvailable=0 WHERE gameID=$gameID;";
                     $this->run_query($query, False, False);
-                    $this->onStart($gameID);
+                    return array(True, True, $userIDs);
                 } else if (count($userIDs) >= 3) {
                     $query = "UPDATE all_games SET allUserIDs='$allUserIDs', userPoints='$userPoints' WHERE gameID=$gameID;";
                     $this->run_query($query, False, False);
-                    if (!isset($_SESSION["gameCountdown"])) $_SESSION["gameCountdown"] = time();
+                    return array(True, False, $userIDs);
                 }
+                return array(False, False, $userIDs);
             }
         }
         function onStart($gameID) {
@@ -64,6 +67,7 @@
             $allWordIDsLeft = explode(",", $row["wordIDsLeft"]);
             $userIDs = explode(",", $row["allUserIDs"]);
             $allUserPoints = explode(",", $row["userPoints"]);
+
             $currentWordID = array_rand($allWordIDsLeft);
 
             $allWordIDsLeft = array_diff($allWordIDsLeft, $currentWordID);
@@ -80,7 +84,6 @@
                 $row = $this->run_query($query, True, False);
                 array_push($toReturn, array($row["username"], $userPoint));
             }
-            if (!isset($_SESSION["definitionCountdown"])) $_SESSION["definitionCountdown"] = time();
             $query = "SELECT * FROM all_words WHERE wordID=$currentWordID;";
             $row = $this->run_query($query, True, False);
             $_SESSION["wordID"] = $row["wordID"];
@@ -94,7 +97,7 @@
             $numUsers = count(explode(",", $row["allUserIDs"]));
             if ($row["userIDsDef"] == "") $userIDsDef = $userID.":".$input;
             else {
-                $allIDsDef = explode(";", $row["userIDsDef"]);
+                $allIDsDef = explode("|", $row["userIDsDef"]);
                 $flag = True;
                 for ($i = 0; $i < count($allIDsDef); $i++) {
                     $idDef = explode(":", $allIDsDef[$i]);
@@ -104,24 +107,76 @@
                         break;
                     }
                 }
-                if ($flag) $userIDsDef = $row["userIDsDef"].";".$userID.":".$input;
-                else $userIDsDef = implode(";", $allIDsDef);
+                if ($flag) $userIDsDef = $row["userIDsDef"]."|".$userID.":".$input;
+                else $userIDsDef = implode("|", $allIDsDef);
             }
             $query = "UPDATE all_games SET userIDsDef=$userIDsDef WHERE gameID=$gameID;";
             $this->run_query($query, False, False);
-            if (count(explode(";", $userIDsDef)) == $numUsers) {
-                $this->wordsAndDefin($gameID);
-            }
+            if (count(explode("|", $userIDsDef)) == $numUsers) return True;
+            return False;
         }
         function wordsAndDefin($gameID) {
             $query = "SELECT * FROM all_games WHERE gameID=$gameID;";
             $row = $this->run_query($query, True, False);
-            $allIDsDef = explode(";", $row["userIDsDef"]);
+            $allIDsDef = explode("|", $row["userIDsDef"]);
             $toReturn = array();
             for ($i = 0; $i < count($allIDsDef); $i++) array_push($toReturn, explode(":", $allIDsDef[$i]));
             array_push($toReturn, array(0, $_SESSION["definition"]));
             shuffle($toReturn);
             return $toReturn;
+        }
+        function select_definition($gameID, $userID, $selectionID) {
+            $query = "SELECT * FROM all_games WHERE gameID=$gameID;";
+            $row = $this->run_query($query, True, False);
+            $allIDsDef = explode("|", $row["userIDsDef"]);
+            $userIDs = explode(",", $row["allUserIDs"]);
+            $numUsers = count($userIDs);
+            $allUserPoints = explode(",", $row["userPoints"]);
+            $numSelects = $row["numSelects"];
+            if (isset($_SESSION["oldSelectionID"])) {
+                for ($i = 0; $i < count($userIDs); $i++) {
+                    // if computer, else if your own, else if another's
+                    if ($_SESSION["oldSelectionID"] == 0 && $userID == $userIDs[$i]) {
+                        $allUserPoints[$i]--;
+                        $numSelects--;
+                        break;
+                    } else if ($_SESSION["oldSelectionID"] == $userID && $userID == $userIDs[$i]) {
+                        $allUserPoints[$i]++;
+                        $numSelects--;
+                        break;
+                    } else if ($_SESSION["oldSelectionID"] == $userIDs[$i]) {
+                        $allUserPoints[$i]--;
+                        $numSelects--;
+                        break;
+                    }
+                }
+            }
+            for ($i = 0; $i < count($userIDs); $i++) {
+                // if computer, else if your own, else if another's
+                if ($selectionID == 0 && $userID == $userIDs[$i]) {
+                    $allUserPoints[$i]++;
+                    $numSelects++;
+                    break;
+                } else if ($selectionID == $userID && $userID == $userIDs[$i]) {
+                    $allUserPoints[$i]--;
+                    $numSelects++;
+                    break;
+                } else if ($selectionID == $userIDs[$i]) {
+                    $allUserPoints[$i]++;
+                    $numSelects++;
+                    break;
+                }
+            }
+            $userPoints = implode(",", $allUserPoints);
+            $query = "UPDATE all_games SET userPoints=$userPoints, numSelects=$numSelects WHERE gameID=$gameID;";
+            $this->run_query($query, False, False);
+            $_SESSION["oldSelectionID"] = $selectionID;
+            if ($numSelects == $numUsers) return True;
+            return False;
+        }
+        function round_summary($gameID) {
+            $query = "SELECT * FROM all_games WHERE gameID=$gameID;";
+            $row = $this->run_query($query, True, False);
         }
     }
 ?>
