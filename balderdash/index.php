@@ -74,7 +74,7 @@
                         <!--<div id="mainText">
                             <p>Join a game!</p>
                         </div>-->
-                        <iframe frameborder="0"  scrolling="no" frameborder="0" style="position: relative; width: 100%; height: 658px; margin-top: 25px;" src="https://v6p9d9t4.ssl.hwcdn.net/html/678092/index.html"></iframe>
+                        <iframe frameborder="0"  scrolling="no" frameborder="0" style="position: relative; width: 100%; height: 658px; margin-top: 25px;" src="https://v6p9d9t4.ssl.hwcdn.net/html/687026/index.html"></iframe>
                         <!--<form method="POST" action="">
                             <button class="modalBtn">Join Game</button>
                         </form>-->
