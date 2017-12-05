@@ -315,6 +315,8 @@
                 $row = $this->run_query($query, True, False);
                 $roundInfo[$row["username"]] = array($definition, $allUserPoints[$i], $selectionUsername);
             }
+            $query = "UPDATE all_games SET currentWordID=0, selectionIDs='', userIDsDef='' WHERE gameID=$gameID;";
+            $this->run_query($query, False, False);
             return $roundInfo;
         }
         /**
@@ -324,14 +326,11 @@
          * @return boolean
          */
         function end_game($gameID, $userID) {
-            $query = "SELECT wordIDsLeft, username FROM all_games WHERE gameID=$gameID;";
+            $query = "SELECT wordIDsLeft FROM all_games WHERE gameID=$gameID;";
             $row = $this->run_query($query, True, False);
-            $username = $row["username"];
             $numWordIDsLeft = count(explode(",", $row["wordIDsLeft"]));
             $query = "SELECT wordID FROM all_words;";
             $row = $this->run_query($query, True, "wordID");
-            $query = "UPDATE all_games SET currentWordID=0, selectionIDs='', userIDsDef='' WHERE gameID=$gameID;";
-            $this->run_query($query, False, False);
             if (count($row) - $numWordIDsLeft == 10) { // End game
                 $query = "SELECT * FROM all_games WHERE gameID=$gameID;";
                 $row = $this->run_query($query, True, False);
@@ -344,7 +343,9 @@
                 rsort($allUserPoints);
                 for ($i = 0; $i < count($allUserPoints); $i++)
                     if ($point == $allUserPoints[$i]) break;
-                $endGame = array($username, $i, $point);
+                $query = "SELECT username FROM users_information WHERE userID=$userID;";
+                $row = $this->run_query($query, True, False);
+                $endGame = array($row["username"], $i, $point);
                 return $endGame;
             } else return False;
         }
