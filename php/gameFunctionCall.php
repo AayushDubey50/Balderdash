@@ -4,6 +4,13 @@
 
     $functionName = $_POST["functionName"];
     switch ($functionName) {
+        case "getUsernames":
+            if (isset($_SESSION["gameID"])) $getUsernames = $game_action->getUsernames($_SESSION["gameID"]);
+            break;
+        case "gameAvailable":
+            if (isset($_SESSION["gameID"])) $gameAvailable = $game_action->gameAvailable($_SESSION["gameID"]);
+            // $gameAvailable returns True if another player
+            break;
         case "join_game":
             $join_game = $game_action->join_game($_SESSION["userID"]);
             if ($join_game[1]) {
@@ -14,12 +21,11 @@
                 $_SESSION["loadingCountdown"] = time();
             }
             // should start countdown of players joining a game
-            // $join_game[2] should be an array of the usernames
             break;
         case "onStart":
             if (isset($_SESSION["loadingCountdown"])) unset($_SESSION["loadingCountdown"]);
-            // $_SESSION["word"] should be the selected word
-            // $onStart should be an array with username as the key and username's points as the value
+            // $_SESSION["word"] == $onStart[0] should be the selected word
+            // $onStart[1] should be an array with username as the key and username's points as the value
             $onStart = $game_action->onStart($_SESSION["gameID"]);
             break;
         case "input_definition":
