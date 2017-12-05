@@ -13,7 +13,7 @@
             } else if ($join_game[0]) {
                 $_SESSION["loadingCountdown"] = time();
             }
-            //; // should start countdown of players joining a game
+            // should start countdown of players joining a game
             // $join_game[2] should be an array of the usernames
             break;
         case "onStart":
@@ -37,10 +37,19 @@
         case "select_definition":
             $selectionUser = $_SESSION["usernamesDefs"][$selectionDef];
             $select_definition = $game_action->select_definition($_SESSION["gameID"], $_SESSION["userID"], $selectionUser);
-            if ($select_definition) $onSummary = $game_action->onSummary($_SESSION["gameID"]);
+            if ($select_definition)
+                $onSummary = $game_action->onSummary($_SESSION["gameID"]);
             break;
         case "onSummary":
             $onSummary = $game_action->onSummary($_SESSION["gameID"]);
+            break;
+        case "end_game":
+            $end_game = $game_action->end_game($_SESSION["gameID"], $_SESSION["userID"]);
+            if (!$end_game) {
+                // Have Unity call onStart
+            } else {
+                // Have Unity show end game screen
+            }
             break;
     }
 ?>
