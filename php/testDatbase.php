@@ -7,8 +7,8 @@ if (!$db_server) {
 }
 $query = "SELECT username FROM users_information WHERE userID = 1";
 $result = mysqli_query($db_server, $query);
-if(mysqli_query_rows($result) > 0){
-	while($row = msqli_fetch_assoc($result)){
+if(mysqli_num_rows($result) > 0){
+	while($row = mysqli_fetch_assoc($result)){
 		echo "ID: " .$row['username'];
 	}
 }
