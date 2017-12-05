@@ -43,7 +43,7 @@
             $query = "SELECT wordId FROM all_words;";
             $row = $this->run_query($query, True, "wordId");
             $wordIDsLeft = implode(",", $row);
-            $query = "INSERT INTO all_games (isAvailable, wordIDsLeft, currentWordID, allUserIDs, userIDsDef, numSelects, userPoints) VALUES (1, '$wordIDsLeft', '', '$userID', '', 0, '0');";
+            $query = "INSERT INTO all_games (isAvailable, wordIDsLeft, currentWordID, allUserIDs, userIDsDef, numSelects, userPoints, selectionIDs) VALUES (1, '$wordIDsLeft', '', '$userID', '', 0, '0', '');";
             $this->run_query($query, False, False);
             $query = "SELECT * FROM all_games WHERE gameID=(SELECT MIN(gameID) FROM all_games WHERE isAvailable=1 AND allUserIDs=$userID AND userPoints='0')";
             $row = $this->run_query($query, True, False);
@@ -118,7 +118,7 @@
             $allWordIDsLeft = array_diff($allWordIDsLeft, $currentWordID);
             $wordIDsLeft = implode(",", $allWordIDsLeft);
 
-            $query = "UPDATE all_games SET wordIDsLeft=$wordIDsLeft, currentWordID=$currentWordID WHERE gameID=$gameID;";
+            $query = "UPDATE all_games SET wordIDsLeft='$wordIDsLeft', currentWordID=$currentWordID WHERE gameID=$gameID;";
             $this->run_query($query, False, False);
 
             $userIDs = explode(",", $row["allUserIDs"]);
@@ -170,14 +170,14 @@
                     if (!$changeDefinition) $userIDsDef = $row["userIDsDef"]."|".$userID.":".$input;
                     else $userIDsDef = implode("|", $allIDsDef);
                 }
-                $query = "UPDATE all_games SET userIDsDef=$userIDsDef WHERE gameID=$gameID;";
+                $query = "UPDATE all_games SET userIDsDef='$userIDsDef' WHERE gameID=$gameID;";
                 $this->run_query($query, False, False);
                 if (count(explode("|", $userIDsDef)) == $numUsers) return True;
                 return False;
             }
         }
         /**
-         * View all definitions in round, including computer's
+         * View all definitions in round, including Computer's
          *
          * @param int $gameID  id of the game to start
          * @return array of string definitions
@@ -199,7 +199,7 @@
             }
             array_push($allDefinitions, $_SESSION["definition"]);
             //array_push($usernamesDefs, array(0, $_SESSION["definition"]));
-            $usernamesDefs[$_SESSION["definition"]] = "computer";
+            $usernamesDefs[$_SESSION["definition"]] = "Computer";
             $_SESSION["usernamesDefs"] = $usernamesDefs;
             shuffle($allDefinitions);
             return $allDefinitions;
@@ -213,8 +213,8 @@
          * @return boolean 
          */
         function select_definition($gameID, $userID, $selectionUser) {
-            if ($selectionUser != "computer") {
-                $query = "SELECT userID FROM users_information WHERE username=$selectionUser;";
+            if ($selectionUser != "Computer") {
+                $query = "SELECT userID FROM users_information WHERE username='$selectionUser';";
                 $row = $this->run_query($query, True, False);
                 $selectionID = $row["userID"];
             } else $selectionID = 0;
@@ -223,12 +223,27 @@
             $row = $this->run_query($query, True, False);
             $allIDsDef = explode("|", $row["userIDsDef"]);
             $userIDs = explode(",", $row["allUserIDs"]);
+            if ($row["selectionIDs"] == "") $selectionIDs = $userID.":".$selectionID;
+            else {
+                $allSelectionIDs = explode("|", $row["selectionIDs"]);
+                $changeSelection = False;
+                for ($i = 0; $i < count($allSelectionIDs); $i++) {
+                    $userSelectionID = explode(":", $allSelectionIDs[$i]);
+                    if ($userID == $userSelectionID[0]) {
+                        $allSelectionIDs[$i] = $userID.":".$selectionID;
+                        $changeSelection = True;
+                        break;
+                    }
+                }
+                if (!$changeSelection) $selectionIDs = $row["selectionIDs"]."|".$userID.":".$selectionID;
+                else $selectionIDs = implode("|", $allSelectionIDs);
+            }
             $numUsers = count($userIDs);
             $allUserPoints = explode(",", $row["userPoints"]);
             $numSelects = $row["numSelects"];
             if (isset($_SESSION["oldSelectionID"])) {
                 for ($i = 0; $i < count($userIDs); $i++) {
-                    // if computer, else if your own, else if another's
+                    // if Computer, else if your own, else if another's
                     if ($_SESSION["oldSelectionID"] == 0 && $userID == $userIDs[$i]) {
                         $allUserPoints[$i]--;
                         $numSelects--;
@@ -245,7 +260,7 @@
                 }
             }
             for ($i = 0; $i < count($userIDs); $i++) {
-                // if computer, else if your own, else if another's
+                // if Computer, else if your own, else if another's
                 if ($selectionID == 0 && $userID == $userIDs[$i]) {
                     $allUserPoints[$i]++;
                     $numSelects++;
@@ -261,22 +276,46 @@
                 }
             }
             $userPoints = implode(",", $allUserPoints);
-            $query = "UPDATE all_games SET userPoints=$userPoints, numSelects=$numSelects WHERE gameID=$gameID;";
+            $query = "UPDATE all_games SET userPoints='$userPoints', numSelects=$numSelects, selectionIDs='$selectionIDs' WHERE gameID=$gameID;";
             $this->run_query($query, False, False);
             $_SESSION["oldSelectionID"] = $selectionID;
             if ($numSelects == $numUsers) return True;
             return False;
         }
         /**
-         * Start a new round in the game
+         * Give full round summary of who guessed what and the number of points each user has.
          *
          * @param int $gameID  id of the game to start
-         * @return array(boolean, boolean, array(usernames in the game))
+         * @return array of username key to another array of user's definition, their points, and their voted username
          */
         function onSummary($gameID) {
             if (isset($_SESSION["oldSelectionID"])) unset($_SESSION["oldSelectionID"]);
             $query = "SELECT * FROM all_games WHERE gameID=$gameID;";
             $row = $this->run_query($query, True, False);
+            $allUserPoints = explode(",", $row["userPoints"]);
+            $allIDsDef = explode("|", $row["userIDsDef"]);
+            $allSelectionIDs = explode("|", $row["selectionIDs"]);
+            $roundInfo = array();
+            for ($i = 0; $i < count($allIDsDef); $i++) {
+                $idDef = explode(":", $allIDsDef[$i]);
+                $userID = $idDef[0];
+                $definition = $idDef[1];
+                $selectionUsername = "";
+                for ($j = 0; $j < count($allSelectionIDs); $i++) {
+                    $allSelectionID = explode(":", $allSelectionIDs[$j]);
+                    if ($userID == $allSelectionID[0]) {
+                        $selectionID = $allSelectionID[1];
+                        $query = "SELECT username FROM users_information WHERE userID=$selectionID;";
+                        $row = $this->run_query($query, True, False);
+                        $selectionUsername = $row["username"];
+                        break;
+                    }
+                }
+                $query = "SELECT username FROM users_information WHERE userID=$userID;";
+                $row = $this->run_query($query, True, False);
+                $roundInfo[$row["username"]] = array($definition, $allUserPoints[$i], $selectionUsername);
+            }
+            return $roundInfo;
         }
     }
 ?>
