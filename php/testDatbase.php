@@ -5,12 +5,12 @@ if (!$db_server) {
 	echo "Error: Unable to connect to MySQL." . PHP_EOL;
 	exit;
 }
-$query = "SELECT username FROM users_information WHERE userID = 1"
+$query = "SELECT username FROM users_information WHERE userID = 1";
 $result = mysqli_query($db_server, $query);
 if(mysqli_query_rows($result) > 0){
 	while($row = msqli_fetch_assoc($result)){
-		echo "ID: " .$row['username']
+		echo "ID: " .$row['username'];
 	}
 }
 mysqli_close($db_server);
->
+?>
