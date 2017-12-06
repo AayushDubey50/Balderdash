@@ -5,6 +5,7 @@
     if ($_POST && isset($_POST["functionName"])) {
         if (is_array($_POST["functionName"])) $functionName = $_POST["functionName"][0];
         else $functionName = $_POST["functionName"];
+        $toDump = "";
         switch ($functionName) {
             case "join_game": // user presses "Join Game" button
                 $join_game = $game_action->join_game($_SESSION["userID"]);
@@ -21,7 +22,7 @@
                 $input_definition = $game_action->input_definition($_SESSION["gameID"], $_SESSION["userID"], $input);
                 if ($input_definition == NULL) $toDump = "Another user has submitted the same definition.";
                 else if ($input_definition) $toDump = $game_action->onChoices($_SESSION["gameID"]);
-                else $toDump = "Your definition is submitted.";
+                else $toDump = "Your definition has been submitted.";
                 break;
             case "onChoices":
                 $toDump = $game_action->onChoices($_SESSION["gameID"]); // $onChoices should be an array of string definitions
@@ -32,7 +33,7 @@
                 $selectionID = $_SESSION["idDefs"][$selectionDef];
                 $select_definition = $game_action->select_definition($_SESSION["gameID"], $_SESSION["userID"], $selectionID);
                 if ($select_definition) $toDump = $game_action->onSummary($_SESSION["gameID"]);
-                else $toDump = "Your vote is submitted.";
+                else $toDump = "Your vote has been submitted.";
                 break;
             case "onSummary":
                 $toDump = $game_action->onSummary($_SESSION["gameID"]);
@@ -44,6 +45,7 @@
                 $onEnd = $game_action->onEnd($_SESSION["gameID"]);
                 break;
         }
-        echo print_r($toDump);
+        if (is_array($toDump)) print_r($toDump);
+        else echo $toDump;
     }
 ?>
