@@ -5,7 +5,8 @@ if (!$db_server) {
 	echo "Error: Unable to connect to MySQL." . PHP_EOL;
 	exit;
 }
-$query = "SELECT username FROM users_information WHERE userID = 1";
+$functionName = $_POST["functionName"];
+$query = "SELECT $functionName FROM users_information WHERE userID = 1";
 $result = mysqli_query($db_server, $query);
 if(mysqli_num_rows($result) > 0){
 	while($row = mysqli_fetch_assoc($result)){
