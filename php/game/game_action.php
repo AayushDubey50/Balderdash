@@ -41,12 +41,12 @@
          * @return array of all usernames
          */
         function getUsernames($gameID) {
-            $query = "SELECT * FROM all_games WHERE gameID=$gameID;";
+            $query = "SELECT allUserIDs FROM all_games WHERE gameID=$gameID;";
             $row = $this->run_query($query, True, False);
             $userIDs = explode(",", $row["allUserIDs"]);
             $usernames = array();
             foreach ($userIDs as $userID) {
-                $query = "SELECT username FROM user_information WHERE userID=$userID;";
+                $query = "SELECT username FROM users_information WHERE userID=$userID;";
                 $row = $this->run_query($query, True, False);
                 array_push($usernames, $row["username"]);
             }
@@ -59,7 +59,7 @@
          * @return boolean
          */
         function gameAvailable($gameID) {
-            $query = "SELECT * FROM all_games WHERE gameID=$gameID;";
+            $query = "SELECT isAvailable FROM all_games WHERE gameID=$gameID;";
             $row = $this->run_query($query, True, False);
             if ($row["isAvailable"] == 1) return True;
             else return False;
@@ -75,7 +75,7 @@
             $wordIDsLeft = implode(",", $row);
             $query = "INSERT INTO all_games (isAvailable, wordIDsLeft, currentWordID, allUserIDs, userIDsDef, userPoints, selectionIDs) VALUES (1, '$wordIDsLeft', '', '$userID', '', '0', '');";
             $this->run_query($query, False, False);
-            $query = "SELECT * FROM all_games WHERE gameID=(SELECT MIN(gameID) FROM all_games WHERE isAvailable=1 AND allUserIDs=$userID AND userPoints='0')";
+            $query = "SELECT gameID FROM all_games WHERE gameID=(SELECT MIN(gameID) FROM all_games WHERE isAvailable=1 AND allUserIDs='$userID' AND userPoints='0')";
             $row = $this->run_query($query, True, False);
             $_SESSION["gameID"] = $row["gameID"];
         }
@@ -90,14 +90,11 @@
             $moveToOnstart = False; // Don't move on to onStart()
 
             // First available game
-            $query = "SELECT * FROM all_games WHERE gameID=(SELECT MIN(gameID) FROM all_games WHERE isAvailable=1)";
+            $query = "SELECT * FROM all_games WHERE gameID=(SELECT MIN(gameID) FROM all_games WHERE isAvailable=1);";
             $row = $this->run_query($query, True, False);
 
-            if ($row == NULL || !$row || !isset($row["gameID"])) {
-                $this->start_game($userID);
-                $query = "SELECT username FROM users_information WHERE userID=$userID;";
-                $row = $this->run_query($query, True, False);
-            } else {
+            if ($row == NULL || !$row || !isset($row["gameID"])) $this->start_game($userID);
+            else {
                 $_SESSION["gameID"] = $row["gameID"];
 
                 // Add another userID of $userID
@@ -141,7 +138,7 @@
             $usernameAndPoints = array();
             $i = 0;
             foreach ($userIDs as $userID) {
-                $query = "SELECT username FROM user_information WHERE userID=$userID;";
+                $query = "SELECT username FROM users_information WHERE userID=$userID;";
                 $row = $this->run_query($query, True, False);
                 $userPoint = $allUserPoints[$i++];
                 $usernameAndPoints[$row["username"]] = $userPoint; // ["AayushDubey50" => 4, "Avi" => 2, ... ]
@@ -163,6 +160,7 @@
          */
         function input_definition($gameID, $userID, $input) {
             $input = str_replace(array(":", "|"), "", $input);
+            $input = ucfirst($input);
             if ($input == $_SESSION["definition"]) return NULL; // User wrote Computer's definition
             else {
                 $query = "SELECT * FROM all_games WHERE gameID=$gameID;";
@@ -204,7 +202,7 @@
             for ($i = 0; $i < count($allIDsDef); $i++) {
                 $idDef = explode(":", $allIDsDef[$i]);
                 $userID = $idDef[0];
-                $query = "SELECT username FROM user_information WHERE userID=$userID;";
+                $query = "SELECT username FROM users_information WHERE userID=$userID;";
                 $row = $this->run_query($query, True, False);
                 array_push($allDefinitions, $idDef[1]);
                 //array_push($usernamesDefs, $idDef);
