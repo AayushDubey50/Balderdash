@@ -7,22 +7,21 @@
         $toDump = array();
         switch ($gameStage) {
             case "gameStage": // $gameStage returns True if another player can join the game
-                $getStageID = $game_action->getStageID($_SESSION["gameID"]);
-                $_SESSION["gameStageID"] = $getStageID;
+                $getStageID = $game_action->getStageID($getStageID);
                 switch ($getStageID) {
                     case 0:
                         $page = "loadingPage";
-                        $getUsernames = $game_action->getUsernames($_SESSION["gameID"]);
+                        $getUsernames = $game_action->getUsernames($getStageID);
                         array_push($toDump, $page, $getUsernames);
                         break;
                     case 1:
                         $page = "guessingPage";
-                        $getNum = $game_action->getNum($_SESSION["gameID"], "userIDsDef", "|");
+                        $getNum = $game_action->getNum($getStageID, "userIDsDef", "|");
                         array_push($toDump, $page, $getNum);
                         break;
                     case 2:
                         $page = "votingPage";
-                        $getNum = $game_action->getNum($_SESSION["gameID"], "selectionIDs", "|");
+                        $getNum = $game_action->getNum($getStageID, "selectionIDs", "|");
                         array_push($toDump, $page, $getNum);
                         break;
                     case 3:
@@ -34,6 +33,6 @@
                 }
                 break;
         }
-        echo print_r($toDump);
+        print_r($toDump);
     }
 ?>
