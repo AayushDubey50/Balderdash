@@ -2,71 +2,51 @@
     require_once("game/game_action.php");
     $game_action = new game_action();
 
-    if ($_POST && isset($_POST["functionName"])) {
-        if (is_array($_POST["functionName"])) {
-            $functionName = $_POST["functionName"][0];
+    if ($_POST && isset($_POST["functionName"]) && is_array($_POST["functionName"])) {
+        $functionName = $_POST["functionName"][0];
+        $userID = intval($_POST["functionName"][1]);
+        if (count($_POST["functionName"]) >= 3) $gameID = $_POST["functionName"][2];
+        $toDump = "";
+        switch ($functionName) {
+            case "join_game": // user presses "Join Game" button
+                $toDump = $game_action->join_game($userID);
+                //if ($join_game[0]) $toDump = $game_action->onStart($gameID);
+                //else $toDump = strval($join_game[0]);
+                break;
+            case "onStart":
+                // $toDump should begin with the selected word then a newline, afterwards a string of "Username: # pts" separated by new lines.
+                $toDump = $game_action->onStart($gameID);
+                break;
+            case "input_definition": // user submits a definition
+                $input = $_POST["functionName"][3];
+                $input_definition = $game_action->input_definition($gameID, $userID, $input);
+                /*if ($input_definition == NULL) $toDump = "False\nAnother user has submitted the same definition.";
+                else if ($input_definition) $toDump = "True";//$toDump = $game_action->onChoices($gameID);
+                else $toDump = "False\nYour definition has been submitted.";*/
+                break;
+            case "onChoices":
+                $toDump = $game_action->onChoices($gameID); // $toDump should be an array of string definitions
+                // $_SESSION["idDefs"] gets set to be an array with elements of the format: ["definition" => userID]. userID = 0 means the Computer
+                break;
+            case "select_definition": // user votes a user's definition
+                //$selectionID = $_SESSION["idDefs"][$_POST["functionName"][3]];
+                $getUserIDsDef = $game_action->getUserIDsDef($gameID);
+                $input = $_POST["functionName"][3];
+                $selectionID = $getUserIDsDef[$input];
+                $select_definition = $game_action->select_definition($gameID, $userID, $selectionID);
+                /*if ($select_definition) $toDump = "True";//$toDump = $game_action->onSummary($gameID);
+                else $toDump = "Your vote has been submitted.";*/
+                break;
+            case "onSummary":
+                $toDump = $game_action->onSummary($gameID);
+                break;
+            case "reset_round":
+                $game_action->reset_round($gameID);
+                break;
+            case "onEnd":
+                $toDump = $game_action->onEnd($gameID, $userID);
+                break;
         }
-        else $functionName = $_POST["functionName"];
+        echo $toDump;
     }
-    switch ($functionName) {
-        case "getUsernames": // $getUsernames returns all usernames in a game
-            if (isset($_SESSION["gameID"])) $getUsernames = $game_action->getUsernames($_SESSION["gameID"]);
-            $toDump = $getUsernames;
-            break;
-        case "gameAvailable": // $gameAvailable returns True if another player can join the game
-            if (isset($_SESSION["gameID"])) $gameAvailable = $game_action->gameAvailable($_SESSION["gameID"]);
-            $toDump = $gameAvailable;
-            break;
-        case "join_game":
-            $join_game = $game_action->join_game($_SESSION["userID"]);
-            if ($join_game[1]) {
-                // $_SESSION["word"] should be the selected word
-                // $onStart should be an array with username as the key and username's points as the value
-                $onStart = $game_action->onStart($_SESSION["gameID"]);
-                $toDump = array("guess_word", $onStart[0], $onStart[1]);
-            } else if ($join_game[0]) {
-                // should start countdown of players joining a game
-                $toDump = array("loadingPage", $join_game[0], $join_game[1]);
-            }
-            $toDump = array("loadingPage", $join_game[0], $join_game[1]);
-            break;
-        case "onStart":
-            // $_SESSION["word"] == $onStart[0] should be the selected word
-            // $onStart[1] should be an array with username as the key and username's points as the value
-            $onStart = $game_action->onStart($_SESSION["gameID"]);
-            $toDump = array("guess_word", $onStart[0], $onStart[1]);
-            break;
-        case "input_definition":
-            $input = $_POST["functionName"][1];
-            $input_definition = $game_action->input_definition($_SESSION["gameID"], $_SESSION["userID"], $input);
-            if ($input_definition == NULL) ; // Have user submit another definition since it's already taken
-            if ($input_definition) $onChoices = $game_action->onChoices($_SESSION["gameID"]);
-            // $onChoices should be an array of string definitions
-            // $_SESSION["idsDefs"] should be an array with elements of the format: [userID, definition]. userID = 0 means the computer
-            break;
-        case "onChoices":
-            $onChoices = $game_action->onChoices($_SESSION["gameID"]);
-            // $onChoices should be an array of string definitions
-            // $_SESSION["idsDefs"] should be an array with elements of the format: [userID, definition]. userID = 0 means the computer
-            break;
-        case "select_definition":
-            $selectionDef = $_POST["functionName"][1];
-            $selectionUser = $_SESSION["usernamesDefs"][$selectionDef];
-            $select_definition = $game_action->select_definition($_SESSION["gameID"], $_SESSION["userID"], $selectionUser);
-            if ($select_definition)
-                $onSummary = $game_action->onSummary($_SESSION["gameID"]);
-            break;
-        case "onSummary":
-            $onSummary = $game_action->onSummary($_SESSION["gameID"]);
-            break;
-        case "end_game":
-            $end_game = $game_action->end_game($_SESSION["gameID"], $_SESSION["userID"]);
-            if (!$end_game) {
-                // Have Unity call onStart
-            } else {
-                // Have Unity show end game screen
-            }
-            break;
-    }
-    echo var_dump($toDump);
 ?>

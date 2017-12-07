@@ -2,13 +2,14 @@
     session_start();
     require_once("../php/User/membership.php");
     $membership = new membership();
+    /*
     if ($_POST && !empty($_POST["email"]) && !empty($_POST["password"])) {
         $badLogin = $membership->validate_user($_POST["email"], $_POST["password"]);
         if ($badLogin != false) print '<script>location.href = "'.$badLogin.'"</script>';
     } else if ($_POST && !empty($_POST["send"])) {
         $send = explode(", ", $_POST["send"]);
         $badSignup = $membership->create_user($send[0], $send[1], $send[2]);
-    }
+    }*/
 
     // Game is only visible to logged-in users.
     if (!isset($_SESSION["status"]) || $_SESSION["status"] != "authorized") {
@@ -74,7 +75,8 @@
                         <!--<div id="mainText">
                             <p>Join a game!</p>
                         </div>-->
-                        <iframe frameborder="0"  scrolling="no" frameborder="0" style="position: relative; width: 100%; height: 658px; margin-top: 25px;" src="https://v6p9d9t4.ssl.hwcdn.net/html/687026/index.html"></iframe>
+                        <!--<iframe frameborder="0" scrolling="no" frameborder="0" style="position: relative; width: 100%; height: 658px; margin-top: 25px;" src="https://v6p9d9t4.ssl.hwcdn.net/html/692485/index.html"></iframe>-->
+                        <a href="balderdash_final1.exe"  type="application/octet-stream">Your information about the exe</a>
                         <!--<form method="POST" action="">
                             <button class="modalBtn">Join Game</button>
                         </form>-->
@@ -87,13 +89,13 @@
         <script src="../js/jquery.js"></script>
         <script src="../js/bootstrap.min.js"></script>
         <script type="text/javascript">
-            $(document).ready(function() {
+            /*$(document).ready(function() {
                  $(window).scroll(function() {
                     var scroll = $(window).scrollTop();
                     if (scroll >= 1) $(".nav").addClass("dark");
                     else $(".nav").removeClass("dark");
                 });
-            });
+            });*/
         </script>
     </body>
 </html>
