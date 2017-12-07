@@ -53,6 +53,24 @@
             return $usernames;
         }
         /**
+         * asdf
+         *
+         * @param int $gameID  id of the game
+         * @return array of all usernames
+         */
+        function getUserIDsDef($gameID) {
+            $query = "SELECT userIDsDef FROM all_games WHERE gameID=$gameID;";
+            $row = $this->run_query($query, True, False);
+            $allIDsDef = explode("|", $row["userIDsDef"]);
+            $idDefs = array();
+            for ($i = 0; $i < count($allIDsDef); $i++) {
+                $idDef = explode(":", $allIDsDef[$i]);
+                $idDefs[$idDef[1]] = $idDef[0];
+            }
+            $idDefs[$_SESSION["definition"]] = "Computer";
+            return $idDefs;
+        }
+        /**
          * Check to see if the given game is available for more players to join
          *
          * @param int $gameID  id of the game
@@ -86,6 +104,19 @@
             $this->run_query($query, False, False);
         }
         /**
+         * Check to see if the given game is available for more players to join
+         *
+         * @param int $gameID  id of the game
+         * @param int $stageID  id of which page to load
+         * @return boolean
+         */
+        function startTimer($gameID) {
+            $query = "SELECT * FROM all_games WHERE gameID=$gameID;";
+            $row = $this->run_query($query, True, False);
+            if (count(explode(",", $row["allUserIDs"])) >= 3) return "True";
+            else return "False";
+        }
+        /**
          * Start a new Balderdash game by inserting a new row into the all_games table
          *
          * @param int $userID  id of the user who is part of the game
@@ -94,11 +125,12 @@
             $query = "SELECT wordID FROM all_words;";
             $row = $this->run_query($query, True, "wordID");
             $wordIDsLeft = implode(",", $row);
-            $query = "INSERT INTO all_games (stageID, wordIDsLeft, currentWordID, allUserIDs, userIDsDef, userPoints, selectionIDs) VALUES (0, '$wordIDsLeft', '', '$userID', '', '0', '');";
+            $allUserIDs = strval($userID);
+            $query = "INSERT INTO all_games (stageID, wordIDsLeft, currentWordID, allUserIDs, userPoints) VALUES (0, '$wordIDsLeft', 0, '$allUserIDs', '0');";
             $this->run_query($query, False, False);
-            $query = "SELECT gameID FROM all_games WHERE gameID=(SELECT MIN(gameID) FROM all_games WHERE stageID=0 AND allUserIDs='$userID' AND userPoints='0')";
+            $query = "SELECT gameID FROM all_games WHERE gameID=(SELECT MIN(gameID) FROM all_games WHERE stageID=0 AND allUserIDs='$allUserIDs' AND userPoints='0') LIMIT 1;";
             $row = $this->run_query($query, True, False);
-            $_SESSION["gameID"] = $row["gameID"];
+            return $row["gameID"];
         }
         /**
          * Join a new Balderdash game if one is available by joining an existing game or creating a new game
@@ -107,17 +139,16 @@
          * @return array(boolean, boolean)
          */
         function join_game($userID) {
-            $startCountdown = False; // Don't start countdown
+            //$startCountdown = False; // Don't start countdown
             $moveToOnstart = False; // Don't move on to onStart()
+            $gameID = -1;
 
             // First available game
             $query = "SELECT * FROM all_games WHERE gameID=(SELECT MIN(gameID) FROM all_games WHERE stageID=0);";
             $row = $this->run_query($query, True, False);
 
-            if ($row == NULL || !$row || !isset($row["gameID"])) $this->start_game($userID);
+            if ($row == NULL || !$row || !isset($row["gameID"])) $gameID = $this->start_game($userID);
             else {
-                $_SESSION["gameID"] = $row["gameID"];
-
                 // Add another userID of $userID
                 $userIDs = explode(",", $row["allUserIDs"]);
                 array_push($userIDs, $userID);
@@ -132,9 +163,10 @@
                 $query = "UPDATE all_games SET allUserIDs='$allUserIDs', userPoints='$userPoints' WHERE gameID=$gameID;";
                 $this->run_query($query, False, False);
                 if (count($userIDs) == 5) $moveToOnstart = True;
-                else if (count($userIDs) == 3) $startCountdown = True;
+                //else if (count($userIDs) == 3) $startCountdown = True;
             }
-            return array($startCountdown, $moveToOnstart);
+            return $gameID;
+            //return array($startCountdown, $moveToOnstart);
         }
         /**
          * Start a new round in the game
@@ -151,7 +183,8 @@
             $allUserPoints = explode(",", $row["userPoints"]);
 
             $currentWordID = array_rand($allWordIDsLeft); // Choose random wordID, which will be currentWordID
-            $wordIDsLeft = implode(",", array_diff($allWordIDsLeft, $currentWordID)); // Remove $currentWordID from $allWordIDsLeft
+            if (($key = array_search($currentWordID, $allWordIDsLeft)) !== false) unset($allWordIDsLeft[$key]);
+            $wordIDsLeft = implode(",", $allWordIDsLeft); // Remove $currentWordID from $allWordIDsLeft
 
             $query = "UPDATE all_games SET wordIDsLeft='$wordIDsLeft', currentWordID=$currentWordID WHERE gameID=$gameID;";
             $this->run_query($query, False, False);
@@ -163,14 +196,16 @@
                 $query = "SELECT username FROM users_information WHERE userID=$userID;";
                 $row = $this->run_query($query, True, False);
                 $userPoint = $allUserPoints[$i++];
-                $usernameAndPoints[$row["username"]] = $userPoint; // ["AayushDubey50" => 4, "Avi" => 2, ... ]
+                $namePoint = $row["username"].": ".$userPoint." pts";
+                array_push($usernameAndPoints, $namePoint);
+                //$usernameAndPoints[$row["username"]] = $userPoint; // ["AayushDubey50" => 4, "Avi" => 2, ... ]
             }
             $query = "SELECT * FROM all_words WHERE wordID=$currentWordID;";
             $row = $this->run_query($query, True, False);
             $_SESSION["wordID"] = $row["wordID"];
             $_SESSION["word"] = $row["word"];
             $_SESSION["definition"] = $row["definition"];
-            return array($_SESSION["word"], $usernameAndPoints);
+            return ($row["word"]."\n".implode("\n", $usernameAndPoints));
         }
         /**
          * Input a user's definition of the word
@@ -224,17 +259,12 @@
             $allDefinitions = array();
             for ($i = 0; $i < count($allIDsDef); $i++) {
                 $idDef = explode(":", $allIDsDef[$i]);
-                //$userID = $idDef[0];
-                //$query = "SELECT username FROM users_information WHERE userID=$userID;";
-                //$row = $this->run_query($query, True, False);
                 array_push($allDefinitions, $idDef[1]);
-                //array_push($idDefs, $idDef);
                 $idDefs[$idDef[1]] = $idDef[0];
             }
             array_push($allDefinitions, $_SESSION["definition"]);
-            //array_push($idDefs, array(0, $_SESSION["definition"]));
             $idDefs[$_SESSION["definition"]] = "Computer";
-            $_SESSION["idDefs"] = $idDefs;
+            //$_SESSION["idDefs"] = $idDefs;
             shuffle($allDefinitions);
             return $allDefinitions;
         }
