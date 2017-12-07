@@ -16,14 +16,13 @@
             case "onStart":
                 // $toDump should begin with the selected word then a newline, afterwards a string of "Username: # pts" separated by new lines.
                 $toDump = $game_action->onStart($gameID);
-                mail("aayush.dubey50@gmail.com", "onStart", $toDump);
                 break;
             case "input_definition": // user submits a definition
                 $input = $_POST["functionName"][3];
                 $input_definition = $game_action->input_definition($gameID, $userID, $input);
-                if ($input_definition == NULL) $toDump = "False, Another user has submitted the same definition.";
+                /*if ($input_definition == NULL) $toDump = "False\nAnother user has submitted the same definition.";
                 else if ($input_definition) $toDump = "True";//$toDump = $game_action->onChoices($gameID);
-                else $toDump = "False, Your definition has been submitted.";
+                else $toDump = "False\nYour definition has been submitted.";*/
                 break;
             case "onChoices":
                 $toDump = $game_action->onChoices($gameID); // $toDump should be an array of string definitions
@@ -31,10 +30,12 @@
                 break;
             case "select_definition": // user votes a user's definition
                 //$selectionID = $_SESSION["idDefs"][$_POST["functionName"][3]];
-                $selectionID = $game_action->getUserIDsDef($gameID);
+                $getUserIDsDef = $game_action->getUserIDsDef($gameID);
+                $input = $_POST["functionName"][3];
+                $selectionID = $getUserIDsDef[$input];
                 $select_definition = $game_action->select_definition($gameID, $userID, $selectionID);
-                if ($select_definition) $toDump = "True";//$toDump = $game_action->onSummary($gameID);
-                else $toDump = "Your vote has been submitted.";
+                /*if ($select_definition) $toDump = "True";//$toDump = $game_action->onSummary($gameID);
+                else $toDump = "Your vote has been submitted.";*/
                 break;
             case "onSummary":
                 $toDump = $game_action->onSummary($gameID);
