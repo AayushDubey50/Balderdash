@@ -6,6 +6,8 @@
     if ($_POST && isset($_POST["callStage"])) {
         $toDump = "";
         $gameID = intval($_POST["callStage"]);
+        //if (!isset($gameID)) $gameID = 1;
+        //$gameID = file_get_contents("https://purduebalderdash.000webhostapp.com/php/getSessions.php?keyName=gameID");
         $getStageID = $game_action->getStageID($gameID);
         switch ($getStageID) {
             case 0:
